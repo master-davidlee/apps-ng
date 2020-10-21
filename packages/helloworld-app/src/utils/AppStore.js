@@ -5,7 +5,8 @@ export const CONTRACT_HELLOWORLD = 5;
 export const createHelloWorldAppStore = (defaultValue = {}, options = {}) => {
   const HelloWorldAppStore = types
     .model('HelloWorldAppStore', {
-      counter: types.maybeNull(types.number)
+      counter: types.maybeNull(types.number),
+      files: types.maybeNull(types.array(types.string)),
     })
     .actions(self => ({
       setCounter (num) {
@@ -13,9 +14,15 @@ export const createHelloWorldAppStore = (defaultValue = {}, options = {}) => {
       },
       async queryCounter (runtime) {
         return await runtime.query(CONTRACT_HELLOWORLD, 'GetCount')
-      }
+      },
+      addFile(file){
+         self.files = file
+      },
+      async queryFile (runtime) {
+        return await runtime.query(CONTRACT_HELLOWORLD, 'GetFiles')
+      },
+
     }))
 
   return HelloWorldAppStore.create(defaultValue)
 }
-
