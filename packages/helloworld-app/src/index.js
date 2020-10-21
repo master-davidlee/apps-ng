@@ -22,7 +22,7 @@ const ButtonWrapper = styled.div`
  */
 const AppHeader = () => (
   <Container>
-    <h1>Hello World!</h1>
+    <h1>SecretFileBox!</h1>
   </Container>
 )
 
@@ -32,20 +32,20 @@ const AppHeader = () => (
 const AppBody = observer(() => {
   const { appRuntime, helloworldApp } = useStore();
   const [, setToast] = useToasts()
-  const { state: inc, bindings } = useInput('1')
+  const { state:address, bindings } = useInput('')
+  const ele = [];
 
   /**
    * Updates the counter by querying the helloworld contract
    * The type definitions of `GetCount` request and response can be found at contract/helloworld.rs
    */
-  async function updateCounter () {
+  async function updateFiles () {
     if (!helloworldApp) return
     try {
-      const response = await helloworldApp.queryCounter(appRuntime)
-      // Print the response in the original to the console
-      console.log('Response::GetCount', response);
+      const response = await helloworldApp.queryFile(appRuntime)
+      console.log('Response::GetFile', response);
 
-      helloworldApp.setCounter(response.GetCount.count)
+      helloworldApp.addFile(response.GetFiles.file)
     } catch (err) {
       setToast(err.message, 'error')
     }
@@ -55,19 +55,27 @@ const AppBody = observer(() => {
    * The `increment` transaction payload object
    * It follows the command type definition of the contract (at contract/helloworld.rs)
    */
-  const incrementCommandPayload = useMemo(() => {
-    const num = parseInt(inc)
-    if (isNaN(num) || inc <= 0) {
-      return undefined
-    } else {
-      return {
-        Increment: {
-          value: num
-        }
+  const addFileCommandPayload = useMemo(() => {
+    return {
+      AddFile:{
+        address:address
       }
     }
-  }, [inc])
+    },[address])
 
+
+    // var ele = [];
+    // helloworldApp.files.forEach( item => {
+    //   ele.push(
+    //     <div>{item}</div>)
+    // })
+    function getFileStr(list){
+      let str = ''
+      list.forEach( item => {
+        str += '<div>' + item + '</div>'
+      })
+      return str
+    }
   return (
     <Container>
       <section>
@@ -77,18 +85,14 @@ const AppBody = observer(() => {
       </section>
       <Spacer y={1}/>
 
-      <h3>Counter</h3>
-      <section>
-        <div>Counter: {helloworldApp.counter === null ? 'unknown' : helloworldApp.counter}</div>
-        <div><Button onClick={updateCounter}>Update</Button></div>
-      </section>
-      <Spacer y={1}/>
+      
 
-      <h3>Increment Counter</h3>
+      <h3>Secret File Box </h3>
       <section>
-        <div>
-          <Input label="By" {...bindings} />
-        </div>
+          <div>
+            <Input label="New file address" {...bindings}/>
+            
+          </div>
         <ButtonWrapper>
           {/**  
             * PushCommandButton is the easy way to send confidential contract txs.
@@ -97,18 +101,33 @@ const AppBody = observer(() => {
           <PushCommandButton
               // tx arguments
               contractId={CONTRACT_HELLOWORLD}
-              payload={incrementCommandPayload}
+              payload={addFileCommandPayload}
               // display messages
-              modalTitle='HelloWorld.Increament()'
-              modalSubtitle={`Increment the counter by ${inc}`}
+              modalTitle='Address'
+              modalSubtitle={`upload file  '${address}'`}
               onSuccessMsg='Tx succeeded'
               // button appearance
               buttonType='secondaryLight'
               icon={PlusIcon}
-              name='Send'
+              name='Uplaod File'
             />
         </ButtonWrapper>
       </section>
+      <Spacer y={1}/>
+      <Spacer y={1}/>
+
+      
+      
+      <section>
+        <div>
+           Secret files:{helloworldApp.files===null ?'unknown':helloworldApp.files.toString()}
+        </div>
+        <Spacer y={1}/>
+        <div><Button onClick={updateFiles}>GetAllFiles</Button></div>
+        </section>
+        <Spacer y={1}/>
+
+        
 
     </Container>
   )
